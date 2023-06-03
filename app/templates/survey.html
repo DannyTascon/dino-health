@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Survey</title>
+</head>
+<body>
+    <h1>Survey</h1>
+    <form action="/survey" method="POST">
+        {{ form.csrf_token }}
+        {% for field in form if field.type != 'CSRFTokenField' and field.type != 'SubmitField' %}
+            <div class="form-group">
+                {{ field.label(class="form-label") }} {{ field(class="form-control") }}
+                {% if field.errors %}
+                    <div class="alert alert-danger">
+                    {% for error in field.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+</body>
+</html>
+    <ul>
+        {% for survey in surveys %}
+            <li>
+                <a href="/survey/{{ survey.id }}">Survey ID: {{ survey.id }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+
+
+
+ 
+
+    
+    
+    

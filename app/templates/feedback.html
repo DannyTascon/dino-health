@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Feedback</title>
+  <style>
+    .feedback-item {
+      margin-bottom: 20px;
+    }
+    .question {
+      font-weight: bold;
+    }
+    .response {
+      margin-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Feedback</h1>
+  {% for item in feedback %}
+    <div class="feedback-item">
+      <div class="question">{{ item.question }}:</div>
+      <div class="response">{{ item.response }}</div>
+    </div>
+  {% endfor %}
+</body>
+</html>
+

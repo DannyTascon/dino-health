@@ -1,0 +1,23 @@
+[
+    {
+        "question": "How have you been feeling lately?",
+        "options": [
+            "Very good",
+            "Good",
+            "Neutral",
+            "Bad",
+            "Very bad"
+        ]
+    },
+    {
+        "question": "How much stress are you under right now?",
+        "options": [
+            "No stress",
+            "A little stress",
+            "Moderate stress",
+            "A lot of stress",
+            "I'm very stressed"
+        ]
+    }
+    
+]

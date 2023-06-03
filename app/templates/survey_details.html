@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Survey Details</title>
+</head>
+<body>
+    <h1>Survey Details</h1>
+    <h3>Survey ID: {{ survey_id }}</h3>
+    
+    <h4>Answers:</h4>
+    <ul>
+        {% for question, response in survey['answers'].items() %}
+            <li>
+                <strong>{{ question }}</strong>: {{ response }}
+            </li>
+        {% endfor %}
+    </ul>
+    
+    <h4>Assessment:</h4>
+    <p>{{ survey['assessment'] }}</p>
+    
+    <h4>Feedback:</h4>
+    <ul>
+        {% for item in survey['feedback'] %}
+            <li>
+                <strong>{{ item['question'] }}</strong><br>
+                Response: {{ item['response'] }}
+            </li>
+        {% endfor %}
+    </ul>
+    
+    <a href="/surveys">Back to Surveys</a>
+</body>
+</html>
