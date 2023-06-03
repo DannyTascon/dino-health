@@ -2,13 +2,17 @@ from flask import Flask, request, render_template
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
-from dotenv import load_dotenv
 from textblob import TextBlob
 from firebase_admin import credentials, firestore, initialize_app
 from werkzeug.exceptions import BadRequest
 import openai
-import os
 import json
+
+from app.config import OPENAI_API_KEY, FIREBASE_CREDS_PATH, QUESTIONS_PATH
+
+from flask import Blueprint, render_template
+
+app = Blueprint('main', __name__)
 
 
 # Define your form class
@@ -21,31 +25,20 @@ class SurveyForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
-load_dotenv()
-
-# Load environment variables
-openai_api_key = os.getenv('OPENAI_API_KEY')
-firebase_creds_path = os.getenv('FIREBASE_CREDS_PATH')
-questions_path = os.getenv('QUESTIONS_PATH')
-SECRET_KEY = os.getenv('FLASK_WTF_PATH')
-
 # Check if the environment variables are set
-if not openai_api_key or not firebase_creds_path or not questions_path:
+if not OPENAI_API_KEY or not FIREBASE_CREDS_PATH or not QUESTIONS_PATH:
     raise ValueError("One or more environment variables are missing.")
 
-app = Flask(__name__, template_folder='templates')
-app.config['SECRET_KEY'] = SECRET_KEY
-
 # Set OpenAI API key
-openai.api_key = openai_api_key
+openai.api_key = OPENAI_API_KEY
 
 # Initialize Firebase
-cred = credentials.Certificate(firebase_creds_path)
+cred = credentials.Certificate(FIREBASE_CREDS_PATH)
 initialize_app(cred)
 db = firestore.client()
 
 # Load questions from file
-with open(questions_path) as f:
+with open(QUESTIONS_PATH) as f:
     questions = json.load(f)
 
 
@@ -134,10 +127,6 @@ def save_survey_data(answers, assessment, feedback):
     except Exception as e:
         print(f"An error occurred while saving survey data: {e}")
         raise BadRequest("An error occurred while saving your survey. Please try again later.")
-
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080, debug=True)
 
 
 @app.route('/survey/<survey_id>', methods=['GET'])
