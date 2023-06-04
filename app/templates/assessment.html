@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment</title>
+</head>
+<body>
+    <h1>Assessment</h1>
+
+    {% if survey %}
+        <h2>Assessment for Survey ID: {{ survey.id }}</h2>
+        <p>{{ survey.assessment }}</p>
+    {% else %}
+        <p>No assessment available.</p>
+    {% endif %}
+
+    <a href="/survey">Back to Survey</a>
+</body>
+</html>

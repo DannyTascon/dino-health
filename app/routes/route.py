@@ -49,8 +49,8 @@ def survey():
     if form.validate_on_submit():
         answers = {f'question{i + 1}': form.data[f'question{i + 1}'] for i in range(len(questions))}
         assessment, feedback = generate_assessment_and_feedback(answers)
-        save_survey_data(answers, assessment, feedback)
-        return render_template('feedback.html', assessment=assessment, feedback=feedback)
+        survey_id = save_survey_data(answers, assessment, feedback)
+        return render_template('feedback.html', assessment=assessment, feedback=feedback, survey_id=survey_id)
 
     # Retrieve the submitted surveys from the Firebase database
     survey_docs = db.collection(u'surveys').stream()
@@ -78,8 +78,10 @@ def perform_sentiment_analysis(text):
 def generate_assessment_and_feedback(answers):
     sentiment = perform_sentiment_analysis(answers.get('response', ''))
     assessment = "You seem to be doing well. Keep up the positive mindset!" if sentiment == 'positive' else \
-        "It seems like you're going through a tough time. Consider seeking professional help or reaching out to a support network." if sentiment == 'negative' else \
-            "Your responses indicate a neutral sentiment. Take some time to reflect on your feelings and consider seeking support if needed."
+        "It seems like you're going through a tough time. Consider seeking professional help or reaching out to a " \
+        "support network." if sentiment == 'negative' else \
+            "Your responses indicate a neutral sentiment. Take some time to reflect on your feelings and consider " \
+            "seeking support if needed."
     feedback = generate_feedback(answers)
     return assessment, feedback
 
@@ -109,11 +111,26 @@ def generate_feedback(answers):
             response_start = prompt.index("Response: ") + len("Response: ")
             question = prompt[:response_start]
             response = prompt[response_start:]
-            feedback.append({"question": question, "response": response})
+
+            # Generate assessment for each response
+            assessment_prompt = f"As a professional psychologist, based on the response: {response}"
+            assessment_models = openai.Completion.create(
+                engine="davinci",
+                prompt=assessment_prompt,
+                temperature=0.5,
+                max_tokens=100,
+                top_p=1.0,
+                frequency_penalty=0.0,
+                presence_penalty=0.0,
+            )
+            assessment = assessment_models.choices[0]['text'].strip()
+
+            feedback.append({"question": question, "response": response, "assessment": assessment})
     else:
-        feedback = [{"question": "No response provided.", "response": ""}]
+        feedback = [{"question": "No response provided.", "response": "", "assessment": "No assessment available."}]
 
     return feedback
+
 
 
 def save_survey_data(answers, assessment, feedback):
@@ -124,10 +141,10 @@ def save_survey_data(answers, assessment, feedback):
             'assessment': assessment,
             'feedback': feedback
         })
+        return doc_ref.id  # this is the new line of code
     except Exception as e:
         print(f"An error occurred while saving survey data: {e}")
         raise BadRequest("An error occurred while saving your survey. Please try again later.")
-
 
 @app.route('/survey/<survey_id>', methods=['GET'])
 def view_survey(survey_id):
@@ -142,3 +159,18 @@ def view_survey(survey_id):
     except Exception as e:
         print(f"An error occurred while retrieving survey data: {e}")
         raise BadRequest("An error occurred while retrieving survey data.")
+
+@app.route('/assessment/<survey_id>', methods=['GET'])
+def assessment(survey_id):
+    try:
+        doc_ref = db.collection(u'surveys').document(survey_id)
+        doc = doc_ref.get()
+        if doc.exists:
+            survey = doc.to_dict()
+            return render_template('assessment.html', survey=survey)
+        else:
+            raise BadRequest("Survey not found.")
+    except Exception as e:
+        print(f"An error occurred while retrieving survey data: {e}")
+        raise BadRequest("An error occurred while retrieving survey data.")
+
