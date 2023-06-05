@@ -52,13 +52,6 @@ def survey():
         survey_id = save_survey_data(answers, assessment, feedback)
         return render_template('feedback.html', assessment=assessment, feedback=feedback, survey_id=survey_id)
 
-    # Retrieve the submitted surveys from the Firebase database
-    survey_docs = db.collection(u'surveys').stream()
-    surveys = [doc.to_dict() for doc in survey_docs]
-
-    return render_template('survey.html', form=form, surveys=surveys)
-
-
 def generate_ai_questions():
     class F(FlaskForm):
         pass
@@ -131,8 +124,6 @@ def generate_feedback(answers):
 
     return feedback
 
-
-
 def save_survey_data(answers, assessment, feedback):
     try:
         doc_ref = db.collection(u'surveys').document()
@@ -173,4 +164,12 @@ def assessment(survey_id):
     except Exception as e:
         print(f"An error occurred while retrieving survey data: {e}")
         raise BadRequest("An error occurred while retrieving survey data.")
+
+@app.route('/surveys', methods=['GET'])
+def surveys():
+    # Retrieve the submitted surveys from the Firebase database
+    survey_docs = db.collection(u'surveys').stream()
+    surveys = [doc.to_dict() for doc in survey_docs]
+    return render_template('surveys.html', surveys=surveys)
+
 
